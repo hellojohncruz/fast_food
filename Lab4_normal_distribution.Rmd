@@ -62,6 +62,20 @@ dairy_queen <- fastfood %>%
 
 1.  Make a plot (or plots) to visualize the distributions of the amount of calories from fat of the options from these two restaurants.  How do their centers, shapes, and spreads compare?
 
+```{r histogram-mcd-dq}
+library(psych)
+
+mcd_dq_cal_fat <- 
+  fastfood |>
+  filter(restaurant %in% c('Mcdonalds', 'Dairy Queen')) |> 
+  select(restaurant, cal_fat)
+
+mcd_dq_cal_fat |> 
+  ggplot(aes(x = cal_fat, fill = restaurant)) +
+  geom_histogram(bins = 10, alpha = 0.4) +
+  
+```
+
 ## The normal distribution
 
 In your description of the distributions, did you use words like *bell-shaped*or *normal*?  It's tempting to say so when faced with a unimodal symmetric distribution.
