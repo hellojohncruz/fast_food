@@ -147,16 +147,24 @@ ggplot(mapping = aes(sample = sim_norm)) +
 
 Even better than comparing the original plot to a single plot generated from a normal distribution is to compare it to many more plots using the following function. It shows the Q-Q plot corresponding to the original data in the top left corner, and the Q-Q plots of 8 different simulated normal data.  It may be helpful to click the zoom button in the plot window.
 
-```{r}
-qqnormsim(sample = cal_fat, data = dairy_queen)
+```{r qqnormsim-dq}
+qqnormsim(dairy_queen$cal_fat)
 ```
 
 4.  Does the normal probability plot for the calories from fat look similar to the plots 
     created for the simulated data?  That is, do the plots provide evidence that the
     calories are nearly normal?
+    
+Surprisingly, the simulated data provides evidence that the calories from fat are nearly normal. The right-skewness only appears in a couple overall. 
 
 5.  Using the same technique, determine whether or not the calories from McDonald's
     menu appear to come from a normal distribution.
+    
+McDonald's appears to be nearly normally distributed, with a few simulations showing it's small right-skewness. 
+    
+```{r qqnormsim-mcd}
+qqnormsim(mcdonalds$cal_fat)
+```
 
 ## Normal probabilities
 
@@ -184,15 +192,98 @@ Although the probabilities are not exactly the same, they are reasonably close. 
 
 6.  Write out two probability questions that you would like to answer about any of the restaurants in this dataset.  Calculate those probabilities using both the theoretical normal distribution as well as the empirical distribution (four probabilities in all).  Which one had a closer agreement between the two methods?
 
+What is the probability of randomly selecting a Subway product containing more than 1200 mg of sodium?
+**Theoretical:** 0.54
+**Empirical:** 0.47
+
+```{r qqnormsim-subway}
+# theoretical probability
+subway <- fastfood |> 
+  filter(restaurant == 'Subway')
+
+subway_mean <- mean(subway$sodium)
+subway_sd <- sd(subway$sodium)
+
+1 - pnorm(q = 1200, mean = subway_mean, sd = subway_sd)
+
+# empirical probability
+fastfood %>% 
+  filter(restaurant == 'Subway' & sodium > 1200) %>%
+  summarise(percent = n() / nrow(subway))
+  
+```
+
+What is the probability of randomly selecting a Burger King product containing less than 1 g of trans fat?
+**Theoretical:** 0.54
+**Empirical:** 0.60
+
+```{r qqnormsim-bk}
+# theoretical probability
+bk <- fastfood |> 
+  filter(restaurant == 'Burger King')
+
+bk_mean <- mean(bk$trans_fat)
+bk_sd <- sd(bk$trans_fat)
+
+pnorm(q = 1, mean = bk_mean, sd = bk_sd)
+  
+# empirical probability
+fastfood %>% 
+  filter(restaurant == 'Burger King' & trans_fat < 1) %>%
+  summarise(percent = n() / nrow(bk))
+  
+```
+
+We can see that the Burger King method had a significantly closer agreement compared to Subway. 
+
 * * *
 
 ## More Practice
 
 7.  Now let's consider some of the other variables in the dataset.  Out of all the different restaurants, which ones' distribution is the closest to normal for sodium?
+
+Burger King has the closest to normal for sodium. 
+
+```{r qqplot-all}
+fastfood |> 
+  ggplot(aes(sample = sodium)) + 
+  geom_line(stat = 'qq') +
+  facet_wrap(vars(restaurant))
+
+
+```
    
 8.  Note that some of the normal probability plots for sodium distributions seem to have a stepwise pattern. why do you think this might be the case?
 
+Sodium is not calculated into the single digits, however with varying increases by tens. This creates a stepwise pattern due to limits in precision.
+
 9.  As you can see, normal probability plots can be used both to assess normality and visualize skewness.  Make a normal probability plot for the total carbohydrates from a restaurant of your choice.  Based on this normal probability plot, is this variable left skewed, symmetric, or right skewed? Use a histogram to confirm your findings.
 
+Symmetric
+
+```{r qqplot-arbys}
+fastfood |> 
+  filter(restaurant == 'Arbys') |> 
+  ggplot(aes(sample = total_carb)) + 
+  geom_line(stat = 'qq')
+```
+
+The histogram shows some left-skewness as the right tail is fatter than the left.
+
+```{r hist-arbys}
+fastfood |> 
+  filter(restaurant == 'Arbys') |> 
+  ggplot(aes(x = total_carb)) + 
+  geom_histogram(bins = 10)
+```
+
+For further evidence, when we run qqnormsim, we can see that the distributions are more symmetric compared to the histogram. 
+
+```{r hist-arbys}
+arbys <- fastfood |> 
+  filter(restaurant == 'Arbys')
+
+qqnormsim(arbys$total_carb)
+```
 
 * * *
